@@ -1,0 +1,129 @@
+#!/bin/sh 
+curdir=$(cd $(dirname $0) && pwd)
+smbconf_def="$curdir/conf/smb.def"
+usage() 
+{
+    echo "ERROR: action missing"
+    echo "syntax: $0 <start|stop|restart|status|config|install|uninstall>"
+    echo "example: $0 start"
+}
+
+
+install()
+{
+    $curdir/smb.sh stop;
+    # Check the lib
+    if [ ! -f $curdir/lib/libbigballofmud.so ]; then
+        echo "Lost the libbigballofmud.so"
+        return 1;
+    fi
+
+    # Check the conf
+    if [ ! -f $curdir/conf/smb.def ]; then
+        echo "Lost the defaul conf file"
+        return 1;
+    fi
+
+    # Get the path of passwd file
+    echo "smb passwd file = $curdir/conf/smbpasswd" >> $smbconf_def;
+    return 0;
+}
+
+
+uninstall()
+{
+    rm  /lib/libbigballofmud.so.0
+    echo "uninstall";
+    return 0;
+}
+
+
+stop()
+{
+    $curdir/smb.sh stop;
+    if [ "0" != "$?" ]; then
+        return 1;
+    fi 
+    return 0;
+}
+
+
+start()
+{
+    $curdir/smb.sh smb_one_key_share_private;
+    if [ "0" != "$?" ]; then
+        return 1;
+    fi 
+    return 0;
+}
+
+
+status()
+{
+    echo "Hello, modou";
+    return 0;
+}
+
+
+config()
+{
+    echo "Hello, modou"
+    return 0;
+}
+
+
+# main
+if [ $# -lt 1 ]; then
+    usage init
+    exit 1
+fi
+
+
+case "$1" in 
+    "stop")
+        stop;
+        if [ "0" != "$?" ]; then
+            exit 1;
+        fi 
+        exit 0;
+        ;;
+    "start")
+        start;
+        if [ "0" != "$?" ]; then
+            exit 1;
+        fi 
+        exit 0;
+        ;;
+    "status")
+        status;
+        if [ "0" != "$?" ]; then
+            exit 1;
+        fi 
+        exit 0;
+        ;;
+    "config")
+        config;
+        if [ "0" != "$?" ]; then
+            exit 1;
+        fi 
+        exit 0;
+        ;;
+    "install")
+        install;
+        if [ "0" != "$?" ]; then
+            exit 1;
+        fi 
+        exit 0;
+        ;;
+    "uninstall")
+        uninstall;
+        if [ "0" != "$?" ]; then
+            exit 1;
+        fi 
+        exit 0;
+        ;;
+    *)
+        usage init;
+        exit 1;
+        ;;
+esac
