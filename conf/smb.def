@@ -6,8 +6,10 @@ passdb backend = smbpasswd
 unix charset = UTF8
 display charset = UTF8
 socket options = TCP_NODELAY SO_RCVBUF=48000 SO_SNDBUF=40000
+map to guest = bad user
 guest account = guest
-security = user
+null passwords = yes
+security = user 
 lm announce = yes
 lm interval = 60
 log file = /var/log.samba

@@ -1,7 +1,17 @@
-#!/bin/sh 
-curdir=$(cd $(dirname $0) && pwd)
-smbconf_def="$curdir/conf/smb.def"
-usage() 
+#!/bin/sh
+CURDIR=$(cd $(dirname $0) && pwd)
+smbconf_def="$CURDIR/conf/smb.def"
+CONFIDR="$CURDIR/conf"
+# to tp
+TO_TP_TITLE="文件共享"
+TO_TP_CONF_DIR="/data/conf/launcher/conf.d"
+TO_TP_CONF_FILE="$TO_TP_CONF_DIR/samba_share.conf"
+TO_TP_ICON="$CURDIR/res/icon.png"
+TO_TP_PRESSED_ICON="$CURDIR/res/picon.png"
+PIDFILE="$CURDIR/custom.pid"
+SMBSTATUSFILE="$CURDIR/conf/smb.status"
+
+usage()
 {
     echo "ERROR: action missing"
     echo "syntax: $0 <start|stop|restart|status|config|install|uninstall>"
@@ -11,21 +21,20 @@ usage()
 
 install()
 {
-    $curdir/smb.sh stop;
-    # Check the lib
-    if [ ! -f $curdir/lib/libbigballofmud.so ]; then
-        echo "Lost the libbigballofmud.so"
-        return 1;
-    fi
-
-    # Check the conf
-    if [ ! -f $curdir/conf/smb.def ]; then
-        echo "Lost the defaul conf file"
-        return 1;
-    fi
-
+    #$CURDIR/sbin/smb.sh stop;
     # Get the path of passwd file
-    echo "smb passwd file = $curdir/conf/smbpasswd" >> $smbconf_def;
+    #echo "smb passwd file = $CURDIR/conf/smbpasswd" >> $smbconf_def;
+    # to tp
+    if [ ! -d $TO_TP_CONF_DIR ]; then
+        mkdir -p $TO_TP_CONF_DIR
+    fi
+    echo "{" > "$TO_TP_CONF_FILE"
+    echo "\"name\" :  \"$TO_TP_TITLE\"," >> "$TO_TP_CONF_FILE"
+    echo "\"icon\" : \"$TO_TP_ICON\"," >> "$TO_TP_CONF_FILE"
+    echo "\"iconPressed\" : \"$TO_TP_PRESSED_ICON\"," >> "$TO_TP_CONF_FILE"
+    echo "\"exec\" : \"$CURDIR/sbin/smb-tp-start.sh\"," >> "$TO_TP_CONF_FILE"
+    echo "\"msgNum\" : 4" >> "$TO_TP_CONF_FILE"
+    echo "}" >> "$TO_TP_CONF_FILE"
     return 0;
 }
 
@@ -40,20 +49,21 @@ uninstall()
 
 stop()
 {
-    $curdir/smb.sh stop;
-    if [ "0" != "$?" ]; then
-        return 1;
-    fi 
+    $CURDIR/sbin/smb-server.sh stop
+    echo 0 > $SMBSTATUSFILE
     return 0;
 }
 
 
 start()
 {
-    $curdir/smb.sh smb_one_key_share_private;
-    if [ "0" != "$?" ]; then
-        return 1;
-    fi 
+    cp $CURDIR/bin/adduser /bin/
+    cp $CURDIR/bin/addgroup /bin/
+    cp $CURDIR/bin/passwd /bin/
+    /bin/adduser guest 1>/dev/null 2>&1
+    /bin/passwd -d guest 1>/dev/null 2>&1
+    $CURDIR/sbin/smb-server.sh start
+    echo 1 > $SMBSTATUSFILE
     return 0;
 }
 
@@ -79,47 +89,47 @@ if [ $# -lt 1 ]; then
 fi
 
 
-case "$1" in 
+case "$1" in
     "stop")
         stop;
         if [ "0" != "$?" ]; then
             exit 1;
-        fi 
+        fi
         exit 0;
         ;;
     "start")
         start;
         if [ "0" != "$?" ]; then
             exit 1;
-        fi 
+        fi
         exit 0;
         ;;
     "status")
         status;
         if [ "0" != "$?" ]; then
             exit 1;
-        fi 
+        fi
         exit 0;
         ;;
     "config")
         config;
         if [ "0" != "$?" ]; then
             exit 1;
-        fi 
+        fi
         exit 0;
         ;;
     "install")
         install;
         if [ "0" != "$?" ]; then
             exit 1;
-        fi 
+        fi
         exit 0;
         ;;
     "uninstall")
         uninstall;
         if [ "0" != "$?" ]; then
             exit 1;
-        fi 
+        fi
         exit 0;
         ;;
     *)
