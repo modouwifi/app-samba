@@ -42,6 +42,7 @@ install()
 uninstall()
 {
     rm  /lib/libbigballofmud.so.0
+    rm  $TO_TP_CONF_FILE
     echo "uninstall";
     return 0;
 }
