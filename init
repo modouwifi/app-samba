@@ -32,7 +32,7 @@ install()
     echo "\"name\" :  \"$TO_TP_TITLE\"," >> "$TO_TP_CONF_FILE"
     echo "\"icon\" : \"$TO_TP_ICON\"," >> "$TO_TP_CONF_FILE"
     echo "\"iconPressed\" : \"$TO_TP_PRESSED_ICON\"," >> "$TO_TP_CONF_FILE"
-    echo "\"exec\" : \"$CURDIR/sbin/smb-tp-start.sh\"," >> "$TO_TP_CONF_FILE"
+    echo "\"exec\" : \"$CURDIR/sbin/smb-action.sh tpstart\"," >> "$TO_TP_CONF_FILE"
     echo "\"msgNum\" : 4" >> "$TO_TP_CONF_FILE"
     echo "}" >> "$TO_TP_CONF_FILE"
     return 0;
