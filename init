@@ -3,7 +3,7 @@ CURDIR=$(cd $(dirname $0) && pwd)
 smbconf_def="$CURDIR/conf/smb.def"
 CONFIDR="$CURDIR/conf"
 # to tp
-TO_TP_TITLE="文件共享"
+TO_TP_TITLE="魔豆文件共享"
 TO_TP_CONF_DIR="/data/conf/launcher/conf.d"
 TO_TP_CONF_FILE="$TO_TP_CONF_DIR/samba_share.conf"
 TO_TP_ICON="$CURDIR/res/icon.png"
