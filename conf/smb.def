@@ -1,5 +1,5 @@
 [global]
-workgroup = WORKGROUP   
+workgroup = WORKGROUP
 netbios name = modou
 server string = Samba_modou
 passdb backend = smbpasswd
@@ -9,7 +9,16 @@ socket options = TCP_NODELAY SO_RCVBUF=48000 SO_SNDBUF=40000
 map to guest = bad user
 guest account = guest
 null passwords = yes
-security = user 
+security = user
 lm announce = yes
 lm interval = 60
 log file = /var/log.samba
+mangling method = hash
+dos charset = CP850
+encrypt passwords = yes
+use spne go = no
+client use spnego = no
+disable spoolss = yes
+host msdfs = no
+strict allocate = No
+use sendfile = yes
