@@ -1,0 +1,21 @@
+{
+    "start_samba_server" : {
+      "id" : "start_samba_server",
+      "is_sync" : true,
+      "cmd"   : "./init start",
+      "relative": true
+    },
+    "stop_samba_server" : {
+      "id" : "stop_samba_server",
+      "is_sync" : true,
+      "cmd"   : "./init stop",
+      "relative": true
+    },
+    "flush_samba_server" : {
+      "id" : "flush_samba_server",
+      "is_sync" : true,
+      "cmd"   : "sbin/smb-server.sh flush",
+      "relative": true
+    }
+ }
+

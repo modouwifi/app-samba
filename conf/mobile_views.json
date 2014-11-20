@@ -1,0 +1,66 @@
+{
+    "main_page_samba" : {
+      "id" : "main_page_samba",
+      "name" : "魔豆文件共享",
+      "type" : "main",
+      "data" : {
+        "state_samba_service": {
+          "id" : "state_samba_service",
+          "access" : "RO"
+        },
+        "state_samba_share" : {
+          "id" : "state_samba_share",
+          "access" : "RO"
+        }
+      },
+      "menu" : {
+        "1" : {
+          "index" : 1,
+          "text" : "开启服务",
+          "type" : "COMMAND",
+          "action" : "start_samba_server",
+          "input" : "params"
+        },
+        "2" : {
+          "index" : 2,
+          "text" : "配置",
+          "type" : "MENU",
+          "items" : {
+           "1" : {
+              "index" : 1,
+              "text" : "sda1",
+              "type" : "VIEW",
+              "viewid" : "page_account_setting"
+            }
+          }
+        },
+        "3" : {
+          "index" : 3,
+          "text" : "刷新",
+          "type" : "COMMAND",
+          "action" : "flush_samba_server",
+          "input" : "params"
+        }
+      }
+    },
+    "page_account_setting" : {
+      "id" : "page_account_setting",
+      "name" : "配置sda1",
+      "type" : "sub",
+      "data" : {
+          "sda1_share_passwd" : {
+          "id" : "sda1_share_passwd",
+          "access" : "RW"
+        },
+        "sda1_share_username" : {
+          "id" : "sda1_share_username",
+          "access" : "RO"
+        },
+        "sda1_share_mode" : {
+          "id" : "sda1_share_mode",
+          "access" : "RW"
+        }
+      }
+    }
+ }
+

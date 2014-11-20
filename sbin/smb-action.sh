@@ -15,6 +15,7 @@ smb_config()
     fi
     custom $CURDIR/../conf/samba-custom-set.conf&
     echo $! > $PIDFILE_SET
+    return 0;
 }
 
 smb_flush()
@@ -24,6 +25,7 @@ smb_flush()
         pid=`cat $PIDFILE 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;
     fi
+    return 0;
 }
 
 smb_next()
@@ -46,6 +48,7 @@ smb_next()
             kill -SIGUSR1 $pid >/dev/null 2>&1;
         fi
     fi
+    return 0;
 }
 
 smb_openmd()
@@ -55,17 +58,26 @@ smb_openmd()
         pid=`cat $PIDFILE_SET 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;
     fi
+    return 0;
 }
 
 smb_passwd()
 {
     input-text "password"  "输入密码" "/var/run/samba.tmp" 1 22
+    if [ ! -f /var/run/samba.tmp ]; then
+        if [ -f $PIDFILE_SET ]; then
+            pid=`cat $PIDFILE_SET 2>/dev/null`;
+            kill -SIGUSR1 $pid >/dev/null 2>&1;
+        fi
+        return 0;
+    fi
     passwd=`cat /var/run/samba.tmp 2>/dev/null`
     $CURDIR/../sbin/smb-tp.sh 'set' '2' $passwd
     if [ -f $PIDFILE_SET ]; then
         pid=`cat $PIDFILE_SET 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;
     fi
+    return 0;
 }
 
 smb_tp_start()
@@ -73,6 +85,7 @@ smb_tp_start()
     $CURDIR/../sbin/smb-tp.sh flush
     custom $CURDIR/../conf/samba-custom.conf 1>/dev/null 2>&1 &
     echo $! > $PIDFILE
+    return 0;
 }
 
 smb_server_start()
@@ -83,6 +96,7 @@ smb_server_start()
         pid=`cat $PIDFILE 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;
     fi
+    return 0;
 }
 
 smb_server_stop()
@@ -93,6 +107,7 @@ smb_server_stop()
         pid=`cat $PIDFILE 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;
     fi
+    return 0;
 }
 
 

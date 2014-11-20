@@ -1,0 +1,53 @@
+{
+    "state_samba_service" : {
+      "id" : "state_samba_service",
+      "name" : "服务状态",
+      "value" : false,
+      "group_id" : "main_info_display",
+      "type" : {
+        "class" : "BOOL"
+      }
+    },
+    "state_samba_share" : {
+      "id" : "state_samba_share",
+      "name" : "分享状态",
+      "value" : "",
+      "group_id" : "main_info_display",
+      "type" : {
+        "class" : "STRING",
+        "min" : 2,
+        "max" : 100
+      }
+    },
+    "sda1_share_mode" : {
+      "id" : "sda1_share_mode",
+      "name" : "加密分享",
+      "value" : false,
+      "group_id" : "main_info_display",
+      "type" : {
+        "class" : "BOOL"
+      }
+    },
+    "sda1_share_passwd" : {
+      "id" : "sda1_share_passwd",
+      "name" : "密码",
+      "value" : "",
+      "group_id" : "main_info_display",
+      "type" : {
+        "class" : "STRING",
+        "min" : 2,
+        "max" : 30
+      }
+    },
+    "sda1_share_username" : {
+      "id" : "sda1_share_username",
+      "name" : "用户名",
+      "value" : "matrix",
+      "group_id" : "main_info_display",
+      "type" : {
+        "class" : "STRING",
+        "min" : 2,
+        "max" : 30
+      }
+    }
+}

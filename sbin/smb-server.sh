@@ -7,7 +7,7 @@ smbconf="$curdir/../conf/smb.conf"
 smbpasswdfile="$curdir/../conf/smbpasswd"
 smbstatusfile="$curdir/../conf/smb.status"
 MATCHCONF="$curdir/../conf/match.conf"
-
+DATAJSON="$curdir/../conf/data.json"
 smb_list_is_available()
 {
     list=`mount | grep "/media/" | cut -d " " -f3`;
@@ -149,6 +149,7 @@ smb_stop()
 {
     killall smbd >/dev/null 2>&1;
     killall nmbd >/dev/null 2>&1;
+    /system/sbin/json4sh.sh "set" $DATAJSON state_samba_service value false
     return 0;
 }
 
@@ -171,6 +172,7 @@ smb_start()
         smb_stop;
         return 1;
     fi
+    /system/sbin/json4sh.sh "set" $DATAJSON state_samba_service value true
     return 0;
 }
 
@@ -219,6 +221,40 @@ smb_one_key_share()
     return 0;
 }
 
+smb_set_match()
+{
+    node="$1";
+    type="$2";
+    passwd="$3";
+    node1=`echo $node | cut -d '/' -f3`
+    new=${node1}"_"${type}"_"${passwd}
+    old=`cat $MATCHCONF | grep "$node" | cut -d '/' -f3-`
+    sed -i "s/$old/$new/" $MATCHCONF
+}
+
+smb_syncconfig()
+{
+    for share_path in `smb_available_list`
+    do
+        dev_num=`echo $share_path | cut -d "/" -f3`;
+        sharemode=`/system/sbin/json4sh.sh "get" $DATAJSON "$dev_num""_share_mode" value`
+        if [ "$sharemode" == "false" ]; then
+            smb_set_match $share_path '1' 'matrix'
+        else
+            sharepasswd=`/system/sbin/json4sh.sh "get" $DATAJSON "$dev_num""_share_passwd" value`
+            shareusername=`/system/sbin/json4sh.sh "get" $DATAJSON "$dev_num""_share_username" value`
+            smb_set_match $share_path '2' $sharepasswd
+        fi
+    done
+}
+
+smb_flushconfig()
+{
+    $curdir/../sbin/smb-action.sh flush
+    mount | grep "/media/" | cut -d " " -f3 > $curdir/../conf/tmp.conf
+    lua $curdir/../sbin/smb-flushjson.lua $curdir
+}
+
 # Main
 case $1 in
         "stop")
@@ -231,6 +267,12 @@ case $1 in
             exit 0;
             ;;
         "start")
+            [ ! -f /bin/adduser ] && cp $curdir/../bin/adduser /bin/
+            [ ! -f /bin/addgroup ] && cp $curdir/../bin/addgroup /bin/
+            [ ! -f /bin/passwd ] && cp $curdir/../bin/passwd /bin/
+            /bin/adduser guest 1>/dev/null 2>&1
+            /bin/passwd -d guest 1>/dev/null 2>&1
+
             smb_list_is_available
             if [ "0" != "$?" ]; then
                 smb_start;
@@ -267,6 +309,14 @@ case $1 in
             fi
             # mark the open status
             echo 1 > $smbstatusfile
+            exit 0;
+            ;;
+        "syncConfig")
+            smb_syncconfig;
+            exit 0;
+            ;;
+        "flush")
+            smb_flushconfig;
             exit 0;
             ;;
          *)

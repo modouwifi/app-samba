@@ -2,6 +2,7 @@
 CURDIR=$(cd $(dirname $0) && pwd)
 smbconf_def="$CURDIR/conf/smb.def"
 CONFIDR="$CURDIR/conf"
+PACKAGEID="com.modouwifi.samba"
 # to tp
 TO_TP_TITLE="魔豆文件共享"
 TO_TP_CONF_DIR="/data/conf/launcher/conf.d"
@@ -21,9 +22,6 @@ usage()
 
 install()
 {
-    #$CURDIR/sbin/smb.sh stop;
-    # Get the path of passwd file
-    #echo "smb passwd file = $CURDIR/conf/smbpasswd" >> $smbconf_def;
     # to tp
     if [ ! -d $TO_TP_CONF_DIR ]; then
         mkdir -p $TO_TP_CONF_DIR
@@ -51,6 +49,7 @@ uninstall()
 stop()
 {
     $CURDIR/sbin/smb-server.sh stop
+    /system/sbin/appInfo.sh set_status $PACKAGEID NOTRUNNING
     echo 0 > $SMBSTATUSFILE
     return 0;
 }
@@ -58,12 +57,8 @@ stop()
 
 start()
 {
-    cp $CURDIR/bin/adduser /bin/
-    cp $CURDIR/bin/addgroup /bin/
-    cp $CURDIR/bin/passwd /bin/
-    /bin/adduser guest 1>/dev/null 2>&1
-    /bin/passwd -d guest 1>/dev/null 2>&1
     $CURDIR/sbin/smb-server.sh start
+    /system/sbin/appInfo.sh set_status $PACKAGEID ISRUNNING
     echo 1 > $SMBSTATUSFILE
     return 0;
 }
@@ -75,10 +70,13 @@ status()
     return 0;
 }
 
-
-config()
+set_config()
 {
-    echo "Hello, modou"
+    $CURDIR/sbin/smb-server.sh syncConfig
+    $CURDIR/sbin/smb-server.sh stop
+    $CURDIR/sbin/smb-server.sh start
+    $CURDIR/sbin/smb-server.sh flush
+    /system/sbin/appInfo.sh set_status $PACKAGEID ISRUNNING
     return 0;
 }
 
@@ -112,8 +110,8 @@ case "$1" in
         fi
         exit 0;
         ;;
-    "config")
-        config;
+    "set_config")
+        set_config;
         if [ "0" != "$?" ]; then
             exit 1;
         fi
