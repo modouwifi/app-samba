@@ -53,7 +53,7 @@ smb_next()
 
 smb_openmd()
 {
-    $CURDIR/../sbin/smb-tp.sh 'set' '1' 'matrix'
+    $CURDIR/../sbin/smb-tp.sh 'set' '1' 'matrix' 'guest'
     if [ -f $PIDFILE_SET ]; then
         pid=`cat $PIDFILE_SET 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;
@@ -63,16 +63,16 @@ smb_openmd()
 
 smb_passwd()
 {
-    input-text "password"  "输入密码" "/var/run/samba.tmp" 1 22
-    if [ ! -f /var/run/samba.tmp ]; then
-        if [ -f $PIDFILE_SET ]; then
-            pid=`cat $PIDFILE_SET 2>/dev/null`;
-            kill -SIGUSR1 $pid >/dev/null 2>&1;
-        fi
-        return 0;
+    # touch a tmp config file
+    echo "yonghuming: " > $CURDIR/../conf/config.tmp
+    echo "mima: " >> $CURDIR/../conf/config.tmp
+    generate-config-file $CURDIR/../conf/config.tmp
+    if [ "$?" != "0" ]; then
+        return 0
     fi
-    passwd=`cat /var/run/samba.tmp 2>/dev/null`
-    $CURDIR/../sbin/smb-tp.sh 'set' '2' $passwd
+    username=`head -n 1 $CURDIR/../conf/config.tmp | cut -d ' ' -f2-`;
+    passwd=`head -n 2 $CURDIR/../conf/config.tmp | tail -n 1 | cut -d ' ' -f2-`;
+    $CURDIR/../sbin/smb-tp.sh 'set' '2' $passwd $username
     if [ -f $PIDFILE_SET ]; then
         pid=`cat $PIDFILE_SET 2>/dev/null`;
         kill -SIGUSR1 $pid >/dev/null 2>&1;

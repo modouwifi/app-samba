@@ -8,6 +8,7 @@ smbpasswdfile="$curdir/../conf/smbpasswd"
 smbstatusfile="$curdir/../conf/smb.status"
 MATCHCONF="$curdir/../conf/match.conf"
 DATAJSON="$curdir/../conf/data.json"
+
 smb_list_is_available()
 {
     list=`mount | grep "/media/" | cut -d " " -f3`;
@@ -40,17 +41,28 @@ smb_get_passwd_from_match()
         return 1;
     fi
     node="$1";
-    passwd=`cat $MATCHCONF | grep "$node" | cut -d '_' -f3-`;
+    passwd=`cat $MATCHCONF | grep "$node" | cut -d '_' -f3`;
     echo $passwd;
     return 0;
 }
 
 
+smb_get_username_from_match()
+{
+    if [ "$#" == "2" ]; then
+        return 1;
+    fi
+    node="$1";
+    passwd=`cat $MATCHCONF | grep "$node" | cut -d '_' -f4-`;
+    echo $passwd;
+    return 0;
+}
+
 smb_try_user()
 {
      # whether it is a system user
      sys_here=`cat /etc/passwd | grep "$1:" | wc -l`;
-     if [ "0" == "$here" ]; then
+     if [ "0" == "$sys_here" ]; then
          return 1;
      fi
      # whether it is a samba user
@@ -69,8 +81,7 @@ smb_add_user()
     # Just in case
     smb_try_user $1;
     if [ "1" == "$?" ]; then
-        echo "there is not the user in system";
-        return 1;
+        adduser $1
     fi
     if [ "$1" == "guest" ]; then
         $curdir/../bin/smbpasswd -n -a -c $smbconf_def $1;
@@ -99,22 +110,8 @@ smb_add_dir()
         return 1;
     fi
     smb_try_user $3;
-    if [ "1" == "$?" ]; then
-        echo "there is not the user $3 in system";
-        return 1;
-    elif [ "2" == "$?" ]; then
+    if [ "0" != "$?" ]; then
         smb_add_user $3 $4;
-        if [ "1" == "$?" ]; then
-            return 1;
-        fi
-        echo "Add the user success"
-    else
-        # maybe need to change the passwd
-        smb_add_user $3 $4;
-        if [ "1" == "$?" ]; then
-            return 1;
-        fi
-        echo "Check the user success"
     fi
     if [ ! -f "$smbconf" ]; then
         cp "$smbconf_def" "$smbconf";
@@ -196,6 +193,7 @@ smb_one_key_share()
     do
         as=`smb_get_type_from_match $share_path`
         password=`smb_get_passwd_from_match $share_path`
+        username=`smb_get_username_from_match $share_path`
         type=`mount | grep $share_path | cut -d " " -f5`;
         dev_num=`echo $share_path | cut -d "/" -f3`;
         if [ "$type" == "ntfs" ]; then
@@ -206,12 +204,12 @@ smb_one_key_share()
             fi
         fi
         if [ "$as" == "1" ]; then
-            smb_add_dir "share_${dev_num}" "$share_path" "guest" "$password";
+            smb_add_dir "share_${dev_num}" "$share_path" "$username" "$password";
             if [ "1" == "$?" ]; then
                 return 1;
             fi
         else
-            smb_add_dir "data_${dev_num}" "$share_path" "matrix" "$password";
+            smb_add_dir "data_${dev_num}" "$share_path" "$username" "$password";
             if [ "1" == "$?" ]; then
                 return 1;
             fi
@@ -226,12 +224,14 @@ smb_set_match()
     node="$1";
     type="$2";
     passwd="$3";
+    username="$4";
     node1=`echo $node | cut -d '/' -f3`
-    new=${node1}"_"${type}"_"${passwd}
+    new=${node1}"_"${type}"_"${passwd}"_"{$username}
     old=`cat $MATCHCONF | grep "$node" | cut -d '/' -f3-`
     sed -i "s/$old/$new/" $MATCHCONF
 }
 
+# fix me
 smb_syncconfig()
 {
     for share_path in `smb_available_list`
@@ -239,11 +239,11 @@ smb_syncconfig()
         dev_num=`echo $share_path | cut -d "/" -f3`;
         sharemode=`/system/sbin/json4sh.sh "get" $DATAJSON "$dev_num""_share_mode" value`
         if [ "$sharemode" == "false" ]; then
-            smb_set_match $share_path '1' 'matrix'
+            smb_set_match $share_path '1' 'matrix' 'matrix'
         else
             sharepasswd=`/system/sbin/json4sh.sh "get" $DATAJSON "$dev_num""_share_passwd" value`
             shareusername=`/system/sbin/json4sh.sh "get" $DATAJSON "$dev_num""_share_username" value`
-            smb_set_match $share_path '2' $sharepasswd
+            smb_set_match $share_path '2' $sharepasswd $shareusername
         fi
     done
 }

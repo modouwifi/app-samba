@@ -76,8 +76,9 @@ smb_set_match()
     node="$1";
     type="$2";
     passwd="$3";
+    username="$4";
     node1=`echo $node | cut -d '/' -f3`
-    new=${node1}"_"${type}"_"${passwd}
+    new=${node1}"_"${type}"_"${passwd}"_"${username}
     old=`cat $MATCHCONF | grep "$node" | cut -d '/' -f3-`
     sed -i "s/$old/$new/" $MATCHCONF
 }
@@ -335,8 +336,9 @@ case "$1" in
     "set")
         style=$2;
         passwd=$3;
+        username=$4;
         node=`cat $SETCONF`
-        smb_set_match $node $style $passwd
+        smb_set_match $node $style $passwd $username
         if [ ! -f $NEXTCONF ]; then
             echo 2 > $NEXTCONF
         fi
